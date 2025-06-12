@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.idea/
+.env
+runs/**/*.pkl
+runs/**/*.csv
