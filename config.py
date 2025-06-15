@@ -1,0 +1,154 @@
+import numpy as np
+import math
+
+# --- Physics Constants ---
+METERS_PER_PIXEL = 10.0
+PHYSICS_FPS = 50
+TIME_STEP_DELTA = 1.0 / PHYSICS_FPS
+GRAVITY = 50.0 * METERS_PER_PIXEL
+
+# --- Environment Dimensions ---
+ENV_WIDTH = 1000
+ENV_HEIGHT = 800
+ENV_DIAG = (ENV_WIDTH ** 2 + ENV_HEIGHT ** 2) ** 0.5
+DRONE_SIZE = 10
+MAX_EPISODE_SECONDS = 40
+PERFECT_LANDING_SPEED_THRESHOLD = 5.0
+
+# --- Random Spawn Locations for Drone ---
+MIN_SPAWN_X = 0.1
+MAX_SPAWN_X = 0.9
+MIN_SPAWN_Y = 0.1
+MAX_SPAWN_Y = 0.9
+
+# --- Random Spawn Locations for Targets (Curriculum Controlled) ---
+MIN_TARGET_SPAWN_X_START = 0.3
+MIN_TARGET_SPAWN_X_END = 0.1
+MAX_TARGET_SPAWN_X_START = 0.7
+MAX_TARGET_SPAWN_X_END = 0.9
+MIN_TARGET_SPAWN_Y_START = 0.3
+MIN_TARGET_SPAWN_Y_END = 0.1
+MAX_TARGET_SPAWN_Y_START = 0.7
+MAX_TARGET_SPAWN_Y_END = 0.9
+
+# --- Multi-Target Episode Configuration ---
+NUM_TARGETS_PER_EPISODE = 500
+
+# --- Agent/Drone Action/Observation Space Definitions ---
+hiddenDims = (512, 512)
+abbreviatedStateNames = [
+    "velX", "velY", "angVel", "velMag", "relX", "relY", "ang",
+    "T1Force", "T2Force", "sinAng", "cosAng", "velToTarget",
+    "hDistWall", "vDistWall", "h_TTI", "v_TTI"
+]
+OBS_DIM = 16
+ACT_DIM = 2
+ACTION_HIGH = np.array([0.10, 0.10], dtype=np.float32)
+ACTION_LOW = -ACTION_HIGH
+
+# --- Drone Specifics ---
+MAX_THRUSTER_FORCE = 6000.0
+THRUSTER_FORCE_DELTA_RATE = 0.05
+DRONE_MAX_SPEED_SCALAR = 1000.0
+DRONE_MAX_ROT_SCALAR = 10.0
+THRUSTER_FIXED_RELATIVE_ANGLE = math.pi / 2
+
+# --- Initial Random State Configuration ---
+INITIAL_MAX_LINEAR_VEL = 20.0
+INITIAL_MAX_ANGULAR_VEL = math.radians(60)
+
+# --- REWARD CURRICULUM PARAMETERS ---
+CURRICULUM_START_AVG_LEN = 50.0
+CURRICULUM_END_AVG_LEN = 1024.0
+
+# --- MANEUVER & PROXIMITY DISTANCE THRESHOLDS ---
+PROXIMITY_RADII = [250.0, 150.0, 60.0, 10.0]
+PROXIMITY_BONUSES = [0.2, 0.8, 1.2, 1.6]
+
+MANEUVER_THRESHOLDS = {
+    'DIFF_THRUST_ZONE_MIN': 30.0,
+    'DIFF_THRUST_ZONE_MAX': 250.0,
+    'FLIP_AND_BURN_ZONE': 80.0,
+    'MIN_SPEED_FOR_MANEUVER': 50.0,
+    'MAX_ARRIVAL_SPEED': 80.0
+}
+
+# --- Weights that DO NOT change ---
+W_CONDITIONAL_UPRIGHT_BONUS_FACTOR = 1.0
+MAX_SPEED_FOR_CONDITIONAL_UPRIGHT_BONUS = 20.0
+MAX_DIST_FOR_CONDITIONAL_UPRIGHT_BONUS = 50.0
+W_VERTICAL_VELOCITY_PENALTY = 0.0002
+W_POWER_PENALTY = 0.0
+W_LOW_THRUST_PENALTY = 0.2
+MIN_THRUSTER_FORCE_FOR_PENALTY = 0.1
+W_PERFECT_LANDING_BONUS = 5000.0
+W_BOUNCE_LANDING_PENALTY = 2500.0
+W_TARGET_REACH_BONUS = 2500.0
+W_HOVER_BONUS = 10.0
+TERMINATION_DELAY_SECONDS_TARGET = 1.0
+W_SURVIVAL_BONUS = 1000.0
+W_BOUNDARY_PENALTY = 3.0
+BOUNDARY_MARGIN = 300.0
+W_TIME_PRESSURE_PENALTY = 0.01
+
+# -- Parameters that WILL BE INTERPOLATED --
+W_UPRIGHT_BONUS_START = 0.8
+W_UPRIGHT_BONUS_END = 0.01
+W_VELOCITY_PENALTY_START = 0.0001
+W_VELOCITY_PENALTY_END = 0.0
+W_DIRECTIONAL_SPEED_FACTOR_START = 0.0001
+W_DIRECTIONAL_SPEED_FACTOR_END = 0.5
+W_DISTANCE_PENALTY_START = 0.000005
+W_DISTANCE_PENALTY_END = 0.00004
+W_STAGNATION_PENALTY_START = 0.0
+W_STAGNATION_PENALTY_END = 0.1
+STAGNATION_SPEED_THRESHOLD = 20.0
+STAGNATION_DISTANCE_THRESHOLD = 50.0
+W_PROXIMITY_SPEED_PENALTIES_START = [0.0, 0.0, 0.0, 0.0]
+W_PROXIMITY_SPEED_PENALTIES_END = [0.01, 0.03, 1.0, 5.0]
+PI_LR_START = 3e-4
+PI_LR_END = 3e-5
+VF_LR_START = 1e-3
+VF_LR_END = 1e-4
+W_OOB_VELOCITY_PENALTY_START = 0.16
+W_OOB_VELOCITY_PENALTY_END = 0.08
+W_DIFF_THRUST_BONUS_START = 0.0
+W_DIFF_THRUST_BONUS_END = 0.2
+W_POINT_TO_BRAKE_BONUS_START = 0.0
+W_POINT_TO_BRAKE_BONUS_END = 10.0
+W_HIGH_SPEED_ARRIVAL_PENALTY_START = 0.0
+W_HIGH_SPEED_ARRIVAL_PENALTY_END = 0.001
+W_LATERAL_VELOCITY_PENALTY_START = 0.0
+W_LATERAL_VELOCITY_PENALTY_END = 0.5
+W_ORBITAL_VELOCITY_PENALTY_START = 0.0
+W_ORBITAL_VELOCITY_PENALTY_END = 1.0
+W_POST_ENTRY_SPEED_PENALTY_START = 0.0
+W_POST_ENTRY_SPEED_PENALTY_END = 0.01
+W_FAR_SLOW_SPEED_PENALTY_START = 0.0
+W_FAR_SLOW_SPEED_PENALTY_END = 0.1
+W_INITIAL_AIM_BONUS_START = 0.0
+W_INITIAL_AIM_BONUS_END = 50.0
+W_BRAKING_FLIP_BONUS_START = 0.0
+W_BRAKING_FLIP_BONUS_END = 15.0
+W_GENERAL_ANGULAR_VELOCITY_PENALTY_START = 0.05
+W_GENERAL_ANGULAR_VELOCITY_PENALTY_END = 0.5
+W_AIM_PENALTY_START = 0.0
+W_AIM_PENALTY_END = 2.0
+W_FINAL_APPROACH_BONUS_START = 0.0
+W_FINAL_APPROACH_BONUS_END = 0.2
+
+# BUG FIX: Add the missing variable back in
+W_BRAKING_BONUS_RINGS_START = [0.0, 0.0, 0.0, 0.0]
+W_BRAKING_BONUS_RINGS_END = [2.0, 5.0, 20.0, 80.0]
+
+# --- List of all reward components for logging ---
+REWARD_COMPONENT_NAMES = [
+    'survival_bonus', 'boundary_penalty', 'distance_penalty', 'proximity_bonus', 'directional_speed_reward',
+    'power_penalty', 'upright_bonus', 'velocity_penalty', 'vertical_velocity_penalty',
+    'proximity_speed_penalty', 'hover_bonus',
+    'stagnation_penalty', 'perfect_landing_bonus', 'bounce_penalty', 'low_thrust_penalty', 'oob_velocity_penalty', 'target_reach_bonus',
+    'braking_bonus', 'diff_thrust_bonus', 'point_to_brake_bonus', 'high_speed_arrival_penalty', 'lateral_velocity_penalty',
+    'orbital_velocity_penalty', 'post_entry_speed_penalty', 'time_pressure_penalty',
+    'far_slow_speed_penalty', 'initial_aim_bonus', 'braking_flip_bonus', 'general_angular_velocity_penalty',
+    'aim_penalty', 'final_approach_bonus'
+]
