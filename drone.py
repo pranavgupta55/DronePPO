@@ -136,10 +136,26 @@ class Drone:
         self.shell.update(gravity, delta_time_step)
 
     def draw(self, pygame_lib, screen, colMain, colSecondary, thruster_draw_size=5):
-        pygame_lib.draw.line(screen, colMain, self.shell.points[0], self.shell.points[1], 2)
-        pygame_lib.draw.circle(screen, colSecondary, self.shell.points[0], 3)
-        pygame_lib.draw.circle(screen, colSecondary, self.shell.points[1], 3)
+        p0_int = [int(self.shell.points[0][0]), int(self.shell.points[0][1])]
+        p1_int = [int(self.shell.points[1][0]), int(self.shell.points[1][1])]
+
+        print(self.shell.points, self.shell.points[0], self.shell.points[1])
+
+        pygame_lib.draw.line(screen, colMain, p0_int, p1_int, 2)
+
+        pygame_lib.draw.circle(screen, colSecondary, p0_int, 3)
+        pygame_lib.draw.circle(screen, colSecondary, p1_int, 3)
+
         thruster1_abs_draw_angle = normalize_angle_signed(THRUSTER_FIXED_RELATIVE_ANGLE + self.shell.angle)
-        pygame_lib.draw.line(screen, colSecondary, self.shell.points[0], [self.shell.points[0][0] + thruster_draw_size * math.cos(thruster1_abs_draw_angle), self.shell.points[0][1] + thruster_draw_size * math.sin(thruster1_abs_draw_angle)], 2)
+        thruster1_end = [
+            int(self.shell.points[0][0] + thruster_draw_size * math.cos(thruster1_abs_draw_angle)),
+            int(self.shell.points[0][1] + thruster_draw_size * math.sin(thruster1_abs_draw_angle))
+        ]
+        pygame_lib.draw.line(screen, colSecondary, p0_int, thruster1_end, 2)
+
         thruster2_abs_draw_angle = normalize_angle_signed(THRUSTER_FIXED_RELATIVE_ANGLE + self.shell.angle)
-        pygame_lib.draw.line(screen, colSecondary, self.shell.points[1], [self.shell.points[1][0] + thruster_draw_size * math.cos(thruster2_abs_draw_angle), self.shell.points[1][1] + thruster_draw_size * math.sin(thruster2_abs_draw_angle)], 2)
+        thruster2_end = [
+            int(self.shell.points[1][0] + thruster_draw_size * math.cos(thruster2_abs_draw_angle)),
+            int(self.shell.points[1][1] + thruster_draw_size * math.sin(thruster2_abs_draw_angle))
+        ]
+        pygame_lib.draw.line(screen, colSecondary, p1_int, thruster2_end, 2)
