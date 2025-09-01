@@ -139,8 +139,6 @@ class Drone:
         p0_int = [int(self.shell.points[0][0]), int(self.shell.points[0][1])]
         p1_int = [int(self.shell.points[1][0]), int(self.shell.points[1][1])]
 
-        print(self.shell.points, self.shell.points[0], self.shell.points[1])
-
         pygame_lib.draw.line(screen, colMain, p0_int, p1_int, 2)
 
         pygame_lib.draw.circle(screen, colSecondary, p0_int, 3)

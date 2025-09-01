@@ -246,7 +246,6 @@ while running:
             y_offset_factor += 1
 
         # --- State value display logic ---
-        # Calculate human-readable values for certain states
         drone_x, drone_y = d.shell.center
         center_vel = d.shell.vel.mean(axis=0)
 
@@ -274,7 +273,6 @@ while running:
             # Default to the raw normalized value from the observation
             display_value = state_item
 
-            # Override with calculated, human-readable values where applicable
             if label == "hDistWall":
                 display_value = h_dist_display
             elif label == "vDistWall":

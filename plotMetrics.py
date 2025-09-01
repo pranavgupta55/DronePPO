@@ -7,7 +7,6 @@ import datetime
 import numpy as np
 import random
 
-# These would typically be imported from your project files
 from fileManagement import list_existing_agents, find_sessions_for_agent
 from config import REWARD_COMPONENT_NAMES
 
@@ -16,14 +15,14 @@ POSITIVE_REWARD_KEYS = [
     'survival_bonus', 'proximity_bonus', 'directional_speed_reward', 'upright_bonus',
     'hover_bonus', 'perfect_landing_bonus', 'target_reach_bonus',
     'braking_bonus', 'diff_thrust_bonus', 'point_to_brake_bonus',
-    'initial_aim_bonus', 'braking_flip_bonus', 'final_approach_bonus'
+    'initial_aim_bonus', 'braking_flip_bonus', 'final_approach_bonus', 'is_alive_bonus'
 ]
 NEGATIVE_REWARD_KEYS = [
     'boundary_penalty', 'distance_penalty', 'power_penalty',
     'velocity_penalty', 'bounce_penalty', 'vertical_velocity_penalty',
     'proximity_speed_penalty', 'low_thrust_penalty', 'oob_velocity_penalty',
     'stagnation_penalty', 'high_speed_arrival_penalty', 'lateral_velocity_penalty',
-    'orbital_velocity_penalty', 'post_entry_speed_penalty', 'time_pressure_penalty',
+    'orbital_velocity_penalty', 'post_entry_speed_penalty',
     'far_slow_speed_penalty', 'general_angular_velocity_penalty', 'aim_penalty'
 ]
 

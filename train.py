@@ -54,7 +54,6 @@ class CustomEnv:
                 self.reward_weights[key] = params.get(key, 0.0)
 
     def reset(self):
-        # ... (same as before) ...
         start_x = random.randint(int(self.env_width * config.MIN_SPAWN_X), int(self.env_width * config.MAX_SPAWN_X))
         start_y = random.randint(int(self.env_height * config.MIN_SPAWN_Y), int(self.env_height * config.MAX_SPAWN_Y))
         self.drone.reset(initial_pos=(start_x, start_y))
@@ -87,8 +86,8 @@ class CustomEnv:
         target_distance_magnitude = np.linalg.norm(target_vector)
         target_direction_normalized = target_vector / (target_distance_magnitude + 1e-8) if target_distance_magnitude > 1e-6 else np.zeros_like(target_vector)
 
-        reward -= config.W_TIME_PRESSURE_PENALTY
-        self.episode_rewards_components['time_pressure_penalty'] -= config.W_TIME_PRESSURE_PENALTY
+        reward += config.W_ALIVE_BONUS
+        self.episode_rewards_components['is_alive_bonus'] -= config.W_ALIVE_BONUS
 
         landing_zone_radius = config.PROXIMITY_RADII[2]
         if not self.has_entered_landing_zone and current_distance < landing_zone_radius:
@@ -198,7 +197,6 @@ class CustomEnv:
             reward += step_hover_bonus
             self.episode_rewards_components['hover_bonus'] += step_hover_bonus
 
-        # ... (Rest of function is identical to previous version) ...
         step_low_thrust_penalty = 0.0
         for force in self.drone.thruster_forces:
             if force < config.MIN_THRUSTER_FORCE_FOR_PENALTY:
@@ -275,8 +273,6 @@ class CustomEnv:
 
 
 if __name__ == '__main__':
-    # ... (main training loop is unchanged and correct) ...
-    # ... (pasting for completeness) ...
     current_obs_dim, current_act_dim, current_hidden_dims = config.OBS_DIM, config.ACT_DIM, config.hiddenDims
     selected_agent_name, agent_path, initial_epoch_offset = None, None, 0
     while True:
@@ -324,11 +320,11 @@ if __name__ == '__main__':
         'max_target_spawn_y': config.MAX_TARGET_SPAWN_Y_START, 'proximity_speed_penalties': np.array(config.W_PROXIMITY_SPEED_PENALTIES_START), 'oob_velocity_penalty': config.W_OOB_VELOCITY_PENALTY_START, 'braking_bonus_rings': np.array(config.W_BRAKING_BONUS_RINGS_START), 'diff_thrust_bonus': config.W_DIFF_THRUST_BONUS_START, 'point_to_brake_bonus': config.W_POINT_TO_BRAKE_BONUS_START, 'high_speed_arrival_penalty': config.W_HIGH_SPEED_ARRIVAL_PENALTY_START,
         'lateral_velocity_penalty': config.W_LATERAL_VELOCITY_PENALTY_START, 'orbital_velocity_penalty': config.W_ORBITAL_VELOCITY_PENALTY_START, 'post_entry_speed_penalty': config.W_POST_ENTRY_SPEED_PENALTY_START, 'far_slow_speed_penalty': config.W_FAR_SLOW_SPEED_PENALTY_START, 'initial_aim_bonus': config.W_INITIAL_AIM_BONUS_START, 'braking_flip_bonus': config.W_BRAKING_FLIP_BONUS_START, 'general_angular_velocity_penalty': config.W_GENERAL_ANGULAR_VELOCITY_PENALTY_START,
         'aim_penalty': config.W_AIM_PENALTY_START, 'final_approach_bonus': config.W_FINAL_APPROACH_BONUS_START}
-    recent_avg_ep_lens = deque(maxlen=30)
+    recent_avg_ep_lens = deque(maxlen=20)
     max_moving_avg_len_seen = 0.0
 
     env = CustomEnv(config.ENV_WIDTH, config.ENV_HEIGHT, curriculum_params=current_curriculum_params, drone_size=config.DRONE_SIZE, max_episode_seconds=config.MAX_EPISODE_SECONDS)
-    STEPS_PER_EPOCH = 2048
+    STEPS_PER_EPOCH = config.STEPS_PER_EPOCH
     agent_params = {'observation_space': env.observation_space, 'action_space': env.action_space, 'ac_kwargs': {'hidden_sizes': current_hidden_dims}, 'epochs': 50000, 'steps_per_epoch': STEPS_PER_EPOCH, 'max_ep_len': env.max_episode_steps, 'gamma': 0.99, 'clip_ratio': 0.2, 'pi_lr': config.PI_LR_START, 'vf_lr': config.VF_LR_START, 'train_pi_iters': 20, 'train_v_iters': 20, 'lam': 0.97, 'target_kl': 0.03, 'seed': 42}
     ppo_agent = PPOAgent(**agent_params)
 
